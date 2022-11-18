@@ -49,61 +49,12 @@ ASoulsLikeCharacter::ASoulsLikeCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>("AbilitySystemComponent");
-	AbilitySystemComponent->SetIsReplicated(true);
-	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
-
-	Attributes = CreateDefaultSubobject<USoulsLikeAttributeSet>("Attributes");
-
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
-UAbilitySystemComponent* ASoulsLikeCharacter::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
-}
 
-void ASoulsLikeCharacter::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-	if (AbilitySystemComponent)
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-
-	InitializeAttributes();
-	GiveDefaultAttributes;
-}
-
-void ASoulsLikeCharacter::OnRep_PlayerState()
-{
-	Super::OnRep_PlayerState();
-
-	if (AbilitySystemComponent)
-		AbilitySystemComponent->InitAbilityActorInfo(this, this);
-
-	InitializeAttributes();
-}
-
-void ASoulsLikeCharacter::InitializeAttributes()
-{
-	if (AbilitySystemComponent && DefaultAttributeEffect)
-	{
-		FGameplayEffectContextHandle EffectContext = AbilitySystemComponent->MakeEffectContext();
-		EffectContext.AddSourceObject(this);
-		FGameplayEffectSpecHandle SpecHandle = AbilitySystemComponent->MakeOutgoingSpec(DefaultAttributeEffect, 1, EffectContext);
-
-		if (SpecHandle.IsValid())
-			FActiveGameplayEffectHandle GEHandle = AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-	}
-}
-
-void ASoulsLikeCharacter::GiveDefaultAttributes()
-{
-	if (HasAuthority() && AbilitySystemComponent)
-		for (TSubclassOf<UGameplayAbility>& StartupAbility : DefaultAbilities)
-			AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility.GetDefaultObject(), 1, 0));
-}
 
 void ASoulsLikeCharacter::BeginPlay()
 {
