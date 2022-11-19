@@ -10,10 +10,4 @@ UCLASS(minimalapi)
 class ASoulsLikeGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-
-public:
-	ASoulsLikeGameMode();
 };
-
-
-
